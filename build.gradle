@@ -11,6 +11,8 @@ buildscript {
 }
 
 final GitData gitData = getGitData()
+
+// -PdoGpgSign=<true/false>
 final boolean doGpgSign = project.hasProperty("doGpgSign") && doGpgSign
 
 gradle.taskGraph.whenReady { taskGraph ->
