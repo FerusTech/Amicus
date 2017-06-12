@@ -1,0 +1,204 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.org.spongepowered:spongegradle:0.8.1"
+        classpath "gradle.plugin.ninja.miserable:blossom:1.0.1"
+    }
+}
+
+final GitData gitData = getGitData()
+final boolean doGpgSign = project.hasProperty("doGpgSign") && doGpgSign
+
+gradle.taskGraph.whenReady { taskGraph ->
+    if (doGpgSign) {
+        // -PgpgKeyId=<short id>
+        project.ext."signing.keyId" = gpgKeyId
+
+        // -PgpgKeyLocation=<path>
+        project.ext."signing.secretKeyRingFile" = gpgKeyLocation
+
+        // -PgpgKeyPassword=<password>
+        project.ext."signing.password" = gpgKeyPassword
+    }
+}
+
+project(":amicus-core") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/core/AmicusCore.java"
+    ext."plugin.name" = "Amicus Core"
+    ext."plugin.description" = "The Core utility of Amicus. Required for all extensions."
+}
+
+project(":amicus-skills") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/skills/AmicusSkills.java"
+    ext."plugin.name" = "Amicus Skills"
+    ext."plugin.description" = "Adds various, levelable skills to the Minecraft game."
+}
+
+project(":amicus-marriage") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/marriage/AmicusMarriage.java"
+    ext."plugin.name" = "Amicus Marriage"
+    ext."plugin.description" = "Adds the ability for players to \"Tie the Knot\", as it were."
+}
+
+project(":amicus-magic") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/magic/AmicusMagic.java"
+    ext."plugin.name" = "Amicus Magic"
+    ext."plugin.description" = "Taps into Amicus Skills to add skills of a more mystical nature."
+}
+
+project(":amicus-chat") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/chat/AmicusChat.java"
+    ext."plugin.name" = "Amicus Chat"
+    ext."plugin.description" = "Modifies how users communicate, adding tabs, view distance, and more."
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "idea"
+    apply plugin: "org.spongepowered.plugin"
+
+    if (doGpgSign) {
+        apply plugin: "maven"
+        apply plugin: "signing"
+    }
+
+    String blossomLocation = ""
+    if (project.hasProperty("replace.location")) {
+        apply plugin: "ninja.miserable.blossom"
+        blossomLocation = project.getProperties().get("replace.location")
+    }
+
+    group "tech.ferus.amicus"
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+        maven { url = "https://repo.spongepowered.org/maven" }
+    }
+
+    dependencies {
+        if (project.name != "amicus-core") {
+            compile project(":amicus-core")
+        }
+
+        compile "org.spongepowered:spongeapi:4.1.0"
+    }
+
+    final String pluginId = project.hasProperty("plugin.id") ? project.getProperties().get("plugin.id") : project.name
+    final String pluginName = project.hasProperty("plugin.name") ? project.getProperties().get("plugin.name") : project.name
+    final String pluginDescription = project.hasProperty("plugin.description") ? project.getProperties().get("plugin.description") : ""
+
+    if (project.hasProperty("replace.location")) {
+        blossom {
+            replaceToken "@pluginId@", pluginId, blossomLocation
+            replaceToken "@pluginName@", pluginName, blossomLocation
+            replaceToken "@pluginDescription@", pluginDescription, blossomLocation
+            replaceToken "@version@", project.version, blossomLocation
+            replaceToken "@url@", "https://ferus.tech", blossomLocation
+            replaceToken "@hashShort@", gitData.hashShort, blossomLocation
+            replaceToken "@hashLong@", gitData.hashLong, blossomLocation
+            replaceToken "@gitBranch@", gitData.branch, blossomLocation
+        }
+    }
+
+    sponge {
+        plugin {
+            id = pluginId
+            meta {
+                name = pluginName
+                version = project.version
+                description = pluginDescription
+            }
+        }
+    }
+
+    compileJava {
+        options.encoding = "UTF-8"
+    }
+
+    jar {
+        manifest {
+            attributes(
+                    "Built-By": System.properties['user.name'],
+                    "Created-By": "${System.properties['java.vm.version']} (${System.properties['java.vm.vendor']})",
+                    "Implementation-Title": project.name,
+                    "Implementation-Vendor": "https://ferus.tech",
+                    "Implementation-Version": project.version,
+                    "Git-Branch": gitData.branch,
+                    "Git-Commit-Long": gitData.hashLong,
+                    "Git-Commit-Short": gitData.hashShort
+            )
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = "sources"
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = "javadoc"
+        from javadoc.destinationDir
+    }
+
+    if (doGpgSign) {
+        signing {
+            sign configurations.archives
+        }
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    build {
+        dependsOn clean
+        dependsOn jar
+        dependsOn javadocJar
+        dependsOn sourcesJar
+
+        jar.mustRunAfter clean
+        javadocJar.mustRunAfter jar
+        sourcesJar.mustRunAfter javadocJar
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = "3.5"
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+private static GitData getGitData() {
+    final GitData data = new GitData()
+
+    data.hashShort = doGitQuery("--short HEAD")
+    data.hashLong = doGitQuery("HEAD")
+    data.branch = doGitQuery("--abbrev-ref HEAD")
+
+    return data
+}
+
+private static doGitQuery(final String query) {
+    def process = ("git rev-parse " + query).execute()
+    process.waitFor()
+    return process.exitValue() ? "unknown" : process.text.trim()
+}
+
+class GitData {
+    String hashShort
+    String hashLong
+    String branch
+}
