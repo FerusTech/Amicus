@@ -90,7 +90,10 @@ subprojects {
     }
 
     dependencies {
-        if (project.name != "amicus-core") {
+        if (project.name == "amicus-core") {
+            compile "ninja.leaping.configurate:configurate-json:3.1.1"
+            compile "ninja.leaping.configurate:configurate-yaml:3.1.1"
+        } else {
             compile project(":amicus-core")
         }
 
