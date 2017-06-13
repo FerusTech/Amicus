@@ -7,6 +7,7 @@ buildscript {
     dependencies {
         classpath "gradle.plugin.org.spongepowered:spongegradle:0.8.1"
         classpath "gradle.plugin.ninja.miserable:blossom:1.0.1"
+        classpath "com.github.jengelman.gradle.plugins:shadow:1.2.4"
     }
 }
 
@@ -67,6 +68,7 @@ subprojects {
     apply plugin: "java"
     apply plugin: "idea"
     apply plugin: "org.spongepowered.plugin"
+    apply plugin: "com.github.johnrengelman.shadow"
 
     if (doGpgSign) {
         apply plugin: "maven"
@@ -94,10 +96,10 @@ subprojects {
             compile "ninja.leaping.configurate:configurate-json:3.1.1"
             compile "ninja.leaping.configurate:configurate-yaml:3.1.1"
         } else {
-            compile project(":amicus-core")
+            compileOnly project(":amicus-core")
         }
 
-        compile "org.spongepowered:spongeapi:4.1.0"
+        compileOnly "org.spongepowered:spongeapi:4.1.0"
     }
 
     final String pluginId = project.hasProperty("plugin.id") ? project.getProperties().get("plugin.id") : project.name
@@ -147,6 +149,10 @@ subprojects {
         }
     }
 
+    shadowJar {
+        classifier = "shaded"
+    }
+
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier = "sources"
         from sourceSets.main.allSource
@@ -167,6 +173,7 @@ subprojects {
         archives jar
         archives sourcesJar
         archives javadocJar
+        archives shadowJar
     }
 
     build {
@@ -174,10 +181,12 @@ subprojects {
         dependsOn jar
         dependsOn javadocJar
         dependsOn sourcesJar
+        dependsOn shadowJar
 
         jar.mustRunAfter clean
         javadocJar.mustRunAfter jar
         sourcesJar.mustRunAfter javadocJar
+        shadowJar.mustRunAfter sourcesJar
     }
 }
 
