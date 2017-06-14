@@ -43,4 +43,9 @@ public class SqliteStorage implements Storage {
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:sqlite:" + this.path.toString());
     }
+
+    @Override
+    public StorageType getStorageType() {
+        return StorageType.SQLITE;
+    }
 }

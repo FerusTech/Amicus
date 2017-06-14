@@ -56,4 +56,9 @@ public class MySqlStorage implements Storage {
                 + "?autoReconnect=true&userSSL=false&rewriteBatchedStatements=true&user=" + this.username
                 + (this.password.isEmpty() ? "" : "&password=" + this.password));
     }
+
+    @Override
+    public StorageType getStorageType() {
+        return StorageType.MYSQL;
+    }
 }

@@ -25,12 +25,31 @@
 
 package tech.ferus.amicus.core.storage;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+public enum StorageType {
 
-public interface Storage {
+    MYSQL("mysql"),
+    SQLITE("sqlite"),
+    INVALID("INVALID")
+    ;
 
-    Connection getConnection() throws SQLException;
+    private final String string;
 
-    StorageType getStorageType();
+    StorageType(final String string) {
+        this.string = string;
+    }
+
+    @Override
+    public String toString() {
+        return this.string;
+    }
+
+    public static StorageType of(final String string) {
+        for (final StorageType type : values()) {
+            if (type.string.equalsIgnoreCase(string)) {
+                return type;
+            }
+        }
+
+        return INVALID;
+    }
 }

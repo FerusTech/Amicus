@@ -23,14 +23,38 @@
  * THE SOFTWARE.
  */
 
-package tech.ferus.amicus.core.storage;
+package tech.ferus.amicus.core;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import tech.ferus.amicus.core.storage.MySqlStorage;
+import tech.ferus.amicus.core.storage.SqliteStorage;
+import tech.ferus.amicus.core.storage.Storage;
+import tech.ferus.amicus.core.storage.StorageType;
 
-public interface Storage {
+import ninja.leaping.configurate.ConfigurationNode;
+import javax.annotation.Nonnull;
 
-    Connection getConnection() throws SQLException;
+public class ConfigProfile {
 
-    StorageType getStorageType();
+    @Nonnull private final Storage storage;
+
+    public ConfigProfile(@Nonnull final ConfigurationNode node,
+                         @Nonnull final StorageType type) {
+        if (type == StorageType.SQLITE) {
+            this.storage = new SqliteStorage(AmicusCore.getInstance().getConfigDir()
+                    .resolve(node.getNode("file-name").getString()));
+        } else {
+            this.storage = new MySqlStorage(
+                    node.getNode("host").getString(),
+                    node.getNode("port").getInt(),
+                    node.getNode("database").getString(),
+                    node.getNode("username").getString(),
+                    node.getNode("password").getString()
+            );
+        }
+    }
+
+    @Nonnull
+    public Storage getStorage() {
+        return this.storage;
+    }
 }

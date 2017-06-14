@@ -36,48 +36,35 @@ import java.nio.file.Path;
 
 public class JsonConfigFile extends ConfigFile<ConfigurationNode> {
 
-    public JsonConfigFile(@Nonnull final Path file,
+    public JsonConfigFile(@Nonnull final Path path,
                           @Nonnull final ConfigurationLoader<ConfigurationNode> loader,
                           @Nonnull final ConfigurationNode root) {
-        super(file, loader, root);
+        super(path, loader, root);
     }
 
-    public static JsonConfigFile load(final Path file) throws IOException {
-        return load(file, null, false, false);
+    public static JsonConfigFile load(final Path path) throws IOException {
+        return load(path, null, false);
     }
 
-    public static JsonConfigFile load(@Nonnull final Path file,
+    public static JsonConfigFile load(@Nonnull final Path path,
                                       @Nonnull final String resource) throws IOException {
-        return load(file, resource, false, true);
+        return load(path, resource, false);
     }
 
-    public static JsonConfigFile load(@Nonnull final Path file,
-                                      @Nonnull final String resource,
-                                      final boolean overwrite) throws IOException {
-        return load(file, resource, overwrite, true);
-    }
-
-    public static JsonConfigFile load(@Nonnull final Path file,
+    public static JsonConfigFile load(@Nonnull final Path path,
                                       @Nullable final String resource,
-                                      final boolean overwrite,
-                                      final boolean merge) throws IOException {
+                                      final boolean overwrite) throws IOException {
         if (overwrite) {
-            Files.deleteIfExists(file);
+            Files.deleteIfExists(path);
         }
 
-        if (!Files.exists(file)) {
-            Files.createDirectories(file.getParent());
-            Files.createFile(file);
+        if (!Files.exists(path)) {
+            Files.createDirectories(path.getParent());
+            Files.copy(JsonConfigFile.class.getResourceAsStream(resource), path);
         }
 
-        final JSONConfigurationLoader fileLoader = JSONConfigurationLoader.builder().setPath(file).build();
-        ConfigurationNode root = fileLoader.load();
+        final JSONConfigurationLoader fileLoader = JSONConfigurationLoader.builder().setPath(path).build();
 
-        if (merge) {
-            root.mergeValuesFrom(JSONConfigurationLoader.builder().setURL(JsonConfigFile.class.getResource(resource)).build().load());
-            fileLoader.save(root);
-        }
-
-        return new JsonConfigFile(file, fileLoader, root);
+        return new JsonConfigFile(path, fileLoader, fileLoader.load());
     }
 }
