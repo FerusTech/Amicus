@@ -42,41 +42,28 @@ public class HoconConfigFile extends ConfigFile<CommentedConfigurationNode> {
     }
 
     public static HoconConfigFile load(final Path path) throws IOException {
-        return load(path, "", false, false);
+        return load(path, "", false);
     }
 
     public static HoconConfigFile load(@Nonnull final Path path,
                                        @Nonnull final String resource) throws IOException {
-        return load(path, resource, false, false);
+        return load(path, resource, false);
     }
 
     public static HoconConfigFile load(@Nonnull final Path path,
                                        @Nonnull final String resource,
                                        final boolean overwrite) throws IOException {
-        return load(path, resource, overwrite, true);
-    }
-
-    public static HoconConfigFile load(@Nonnull final Path path,
-                                       @Nonnull final String resource,
-                                       final boolean overwrite,
-                                       final boolean merge) throws IOException {
         if (overwrite) {
             Files.deleteIfExists(path);
         }
 
         if (!Files.exists(path)) {
             Files.createDirectories(path.getParent());
-            Files.createFile(path);
+            Files.copy(HoconConfigFile.class.getResourceAsStream(resource), path);
         }
 
         final HoconConfigurationLoader fileLoader = HoconConfigurationLoader.builder().setPath(path).build();
-        final CommentedConfigurationNode root = fileLoader.load();
 
-        if (merge) {
-            root.mergeValuesFrom(HoconConfigurationLoader.builder().setURL(HoconConfigFile.class.getResource(resource)).build().load());
-            fileLoader.save(root);
-        }
-
-        return new HoconConfigFile(path, fileLoader, root);
+        return new HoconConfigFile(path, fileLoader, fileLoader.load());
     }
 }

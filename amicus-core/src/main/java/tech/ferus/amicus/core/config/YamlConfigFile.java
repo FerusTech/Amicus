@@ -28,6 +28,7 @@ package tech.ferus.amicus.core.config;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.yaml.snakeyaml.Yaml;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -36,48 +37,35 @@ import java.nio.file.Path;
 
 public class YamlConfigFile extends ConfigFile<ConfigurationNode> {
 
-    public YamlConfigFile(@Nonnull final Path file,
+    public YamlConfigFile(@Nonnull final Path path,
                           @Nonnull final ConfigurationLoader<ConfigurationNode> loader,
                           @Nonnull final ConfigurationNode root) {
-        super(file, loader, root);
+        super(path, loader, root);
     }
 
-    public static YamlConfigFile load(final Path file) throws IOException {
-        return load(file, null, false, false);
+    public static YamlConfigFile load(final Path path) throws IOException {
+        return load(path, null, false);
     }
 
-    public static YamlConfigFile load(@Nonnull final Path file,
+    public static YamlConfigFile load(@Nonnull final Path path,
                                       @Nonnull final String resource) throws IOException {
-        return load(file, resource, false, true);
+        return load(path, resource, false);
     }
 
-    public static YamlConfigFile load(@Nonnull final Path file,
-                                      @Nonnull final String resource,
-                                      final boolean overwrite) throws IOException {
-        return load(file, resource, overwrite, true);
-    }
-
-    public static YamlConfigFile load(@Nonnull final Path file,
+    public static YamlConfigFile load(@Nonnull final Path path,
                                       @Nullable final String resource,
-                                      final boolean overwrite,
-                                      final boolean merge) throws IOException {
+                                      final boolean overwrite) throws IOException {
         if (overwrite) {
-            Files.deleteIfExists(file);
+            Files.deleteIfExists(path);
         }
 
-        if (!Files.exists(file)) {
-            Files.createDirectories(file.getParent());
-            Files.createFile(file);
+        if (!Files.exists(path)) {
+            Files.createDirectories(path.getParent());
+            Files.copy(YamlConfigFile.class.getResourceAsStream(resource), path);
         }
 
-        final YAMLConfigurationLoader fileLoader = YAMLConfigurationLoader.builder().setPath(file).build();
-        final ConfigurationNode root = fileLoader.load();
+        final YAMLConfigurationLoader fileLoader = YAMLConfigurationLoader.builder().setPath(path).build();
 
-        if (merge) {
-            root.mergeValuesFrom(YAMLConfigurationLoader.builder().setURL(YamlConfigFile.class.getResource(resource)).build().load());
-            fileLoader.save(root);
-        }
-
-        return new YamlConfigFile(file, fileLoader, root);
+        return new YamlConfigFile(path, fileLoader, fileLoader.load());
     }
 }
