@@ -59,7 +59,10 @@ public class HoconConfigFile extends ConfigFile<CommentedConfigurationNode> {
 
         if (!Files.exists(path)) {
             Files.createDirectories(path.getParent());
-            Files.copy(HoconConfigFile.class.getResourceAsStream(resource), path);
+
+            if (!resource.isEmpty()) {
+                Files.copy(HoconConfigFile.class.getResourceAsStream(resource), path);
+            }
         }
 
         final HoconConfigurationLoader fileLoader = HoconConfigurationLoader.builder().setPath(path).build();
