@@ -26,7 +26,7 @@
 package tech.ferus.amicus.chat;
 
 import tech.ferus.amicus.core.AmicusCore;
-import tech.ferus.amicus.core.ConfigProfile;
+import tech.ferus.amicus.core.config.ConfigProfile;
 import tech.ferus.amicus.core.config.HoconConfigFile;
 
 import com.google.inject.Inject;

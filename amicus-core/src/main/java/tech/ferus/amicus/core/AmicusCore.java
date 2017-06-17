@@ -25,6 +25,7 @@
 
 package tech.ferus.amicus.core;
 
+import tech.ferus.amicus.core.config.ConfigProfile;
 import tech.ferus.amicus.core.config.HoconConfigFile;
 
 import com.google.common.collect.Maps;

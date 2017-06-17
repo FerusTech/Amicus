@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-package tech.ferus.amicus.core;
+package tech.ferus.amicus.core.config;
 
-import tech.ferus.amicus.core.config.ConfigKey;
+import tech.ferus.amicus.core.AmicusCore;
 import tech.ferus.amicus.core.storage.MySqlStorage;
 import tech.ferus.amicus.core.storage.SqliteStorage;
 import tech.ferus.amicus.core.storage.Storage;
@@ -34,9 +34,6 @@ import tech.ferus.amicus.core.storage.StorageType;
 import tech.ferus.amicus.core.util.FilesWrapper;
 
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.SimpleConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import org.omg.PortableInterceptor.LOCATION_FORWARD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
@@ -50,10 +47,18 @@ public class ConfigProfile {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ConfigProfile.class);
 
+    @Nonnull private final String name;
     @Nonnull private final Storage storage;
 
-    public ConfigProfile(@Nonnull final Storage storage) {
+    public ConfigProfile(@Nonnull final String name,
+                         @Nonnull final Storage storage) {
+        this.name = name;
         this.storage = storage;
+    }
+
+    @Nonnull
+    public String getName() {
+        return this.name;
     }
 
     @Nonnull
@@ -91,7 +96,7 @@ public class ConfigProfile {
             }
         }
 
-        return new ConfigProfile(new SqliteStorage(database));
+        return new ConfigProfile(key, new SqliteStorage(database));
     }
 
     @Nullable
@@ -115,6 +120,6 @@ public class ConfigProfile {
             return null;
         }
 
-        return new ConfigProfile(new MySqlStorage(host, port, database, username, password));
+        return new ConfigProfile(key, new MySqlStorage(host, port, database, username, password));
     }
 }
