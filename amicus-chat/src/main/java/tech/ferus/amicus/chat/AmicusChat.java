@@ -96,7 +96,7 @@ public class AmicusChat {
             LOGGER.error("AmicusChat profile failed to load!", new IllegalStateException());
             this.game.getEventManager().unregisterPluginListeners(this);
         } else {
-            LOGGER.info("Successfully loaded profile for AmicusChat.");
+            LOGGER.info("Successfully loaded profile \"{}\".", profile.getName());
         }
     }
 
