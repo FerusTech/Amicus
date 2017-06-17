@@ -130,7 +130,7 @@ public class AmicusCore {
         if (this.hasConfigProfile(key)) {
             return this.configProfiles.get(key);
         } else {
-            if (this.hasConfigProfile("default")) {
+            if (!this.hasConfigProfile("default")) {
                 LOGGER.error("Default profile doesn't exist and \"{}\" can't be found!", key, new IllegalStateException());
                 return null;
             }
