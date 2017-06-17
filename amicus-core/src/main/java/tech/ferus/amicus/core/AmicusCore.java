@@ -34,6 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import javax.annotation.Nonnull;
@@ -78,8 +81,6 @@ public class AmicusCore {
         this.game = game;
 
         this.configProfilesFile = this.loadConfig();
-
-        this.registerProfiles();
     }
 
     private HoconConfigFile loadConfig() {
@@ -94,7 +95,13 @@ public class AmicusCore {
         return config;
     }
 
-    private void registerProfiles() {
+    @Listener(order = Order.EARLY)
+    public void onGamePreInitialization(@Nonnull final GamePreInitializationEvent event) {
+        if (this.configProfilesFile == null) {
+            LOGGER.error("Failed to properly load configuration profiles.", new IllegalStateException());
+            return;
+        }
+
         this.configProfiles.clear();
         for (final Map.Entry<Object, ? extends ConfigurationNode> entry : this.configProfilesFile.getNode().getChildrenMap().entrySet()) {
             if (!entry.getValue().hasMapChildren()) {
