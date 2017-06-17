@@ -26,21 +26,18 @@
 package tech.ferus.amicus.core;
 
 import tech.ferus.amicus.core.config.HoconConfigFile;
-import tech.ferus.amicus.core.storage.StorageType;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -70,7 +67,7 @@ public class AmicusCore {
     @Nonnull private final Map<String, ConfigProfile> configProfiles;
     @Nonnull private final Path configDir;
     @Nonnull private final Game game;
-    private final HoconConfigFile config;
+    @Nullable private final HoconConfigFile configProfilesFile;
 
     @Inject
     public AmicusCore(@ConfigDir(sharedRoot = false) @Nonnull final Path configDir,
@@ -80,33 +77,42 @@ public class AmicusCore {
         this.configDir = configDir;
         this.game = game;
 
-        final Path configPath = configDir.resolve("amicus-core.conf");
+        this.configProfilesFile = this.loadConfig();
+
+        this.registerProfiles();
+    }
+
+    private HoconConfigFile loadConfig() {
+        final Path configPath = this.configDir.resolve("profiles.conf");
         HoconConfigFile config = null;
         try {
-            config = HoconConfigFile.load(configPath, "/amicus-core.conf");
+            config = HoconConfigFile.load(configPath, "/profiles.conf");
         } catch (final IOException e) {
             LOGGER.error("Encountered exception while creating configuration file: {}", configPath.toString(), e);
         }
 
-        this.config = config;
+        return config;
     }
 
-    @Listener
-    public void onGamePreInitialization(@Nonnull final GamePostInitializationEvent event) {
-        for (final Map.Entry<Object, ? extends ConfigurationNode> entry : this.config.getNode().getChildrenMap().entrySet()) {
+    private void registerProfiles() {
+        this.configProfiles.clear();
+        for (final Map.Entry<Object, ? extends ConfigurationNode> entry : this.configProfilesFile.getNode().getChildrenMap().entrySet()) {
             if (!entry.getValue().hasMapChildren()) {
                 continue;
             }
 
-            final String key = entry.getKey() + "";
-            final StorageType type = StorageType.of(entry.getValue().getNode("data-store").getString("invalid"));
+            final String key = "" + entry.getKey();
+            final ConfigurationNode config = entry.getValue();
 
-            if (type == StorageType.INVALID) {
+            final ConfigProfile profile = ConfigProfile.parse(key, config);
+            if (profile == null) {
                 continue;
             }
 
-            LOGGER.info("Found \"{}\" profile, using \"{}\".", key, type.toString());
-            this.configProfiles.put(key, new ConfigProfile(entry.getValue(), type));
+            LOGGER.info("Found \"{}\" profile, using \"{}\".", key,
+                    profile.getStorage().getStorageType().toString());
+
+            this.configProfiles.put(key, profile);
         }
 
         if (!this.hasConfigProfile("default")) {
@@ -119,8 +125,18 @@ public class AmicusCore {
         return this.configProfiles;
     }
 
+    @Nullable
     public ConfigProfile getConfigProfile(@Nonnull final String key) {
-        return this.configProfiles.get(key);
+        if (this.hasConfigProfile(key)) {
+            return this.configProfiles.get(key);
+        } else {
+            if (this.hasConfigProfile("default")) {
+                LOGGER.error("Default profile doesn't exist and \"{}\" can't be found!", key, new IllegalStateException());
+                return null;
+            }
+
+            return this.configProfiles.get("default");
+        }
     }
 
     public boolean hasConfigProfile(@Nonnull final String profile) {
@@ -139,8 +155,8 @@ public class AmicusCore {
     }
 
     @Nonnull
-    public HoconConfigFile getConfig() {
-        return this.config;
+    public HoconConfigFile getConfigProfilesFile() {
+        return this.configProfilesFile;
     }
 
     private static AmicusCore instance;

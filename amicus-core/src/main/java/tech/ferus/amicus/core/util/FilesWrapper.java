@@ -23,50 +23,40 @@
  * THE SOFTWARE.
  */
 
-package tech.ferus.amicus.core.config;
+package tech.ferus.amicus.core.util;
 
-import ninja.leaping.configurate.ConfigurationNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public class ConfigKey<T> {
+public class FilesWrapper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigKey.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesWrapper.class);
 
-    @Nonnull private final Object[] key;
-    @Nonnull private final T def;
-
-    private ConfigKey(@Nonnull final Object[] key, @Nonnull final T def) {
-        this.key = key;
-        this.def = def;
-    }
-
-    @Nonnull
-    public Object[] getKey() {
-        return this.key;
-    }
-
-    @Nonnull
-    public T get(@Nonnull final ConfigFile config) {
-        return this.get(config.getNode());
-    }
-
-    @Nonnull
-    public T get(@Nonnull final ConfigurationNode node) {
+    public static boolean createDirectories(@Nonnull final Path path) {
         try {
-            return (T) node.getNode(this.key).getValue(this.def);
-        } catch (final ClassCastException e) {
-            LOGGER.error("Improper value type for \"{}\"!", this.key, e);
-            return this.def;
+            Files.createDirectories(path);
+            return true;
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create directory (and parents?): {}", path.toString());
+            return false;
         }
     }
 
-    public static <T> ConfigKey<T> define(@Nonnull final T def, @Nonnull final Object key) {
-        return new ConfigKey<>(new Object[]{key}, def);
-    }
+    public static boolean createFile(@Nonnull final Path path) {
+        if (!createDirectories(path.getParent())) {
+            return false;
+        }
 
-    public static <T> ConfigKey<T> define(@Nonnull final T def, @Nonnull final String... key) {
-        return new ConfigKey<>(key, def);
+        try {
+            Files.createFile(path);
+            return true;
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create file: {}", path.toString());
+            return false;
+        }
     }
 }
