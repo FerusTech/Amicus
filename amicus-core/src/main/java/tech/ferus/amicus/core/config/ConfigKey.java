@@ -25,6 +25,7 @@
 
 package tech.ferus.amicus.core.config;
 
+import ninja.leaping.configurate.ConfigurationNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
@@ -48,10 +49,15 @@ public class ConfigKey<T> {
 
     @Nonnull
     public T get(@Nonnull final ConfigFile config) {
+        return this.get(config.getNode());
+    }
+
+    @Nonnull
+    public T get(@Nonnull final ConfigurationNode node) {
         try {
-            return (T) config.getNode(this.key).getValue(this.def);
+            return (T) node.getNode(this.key).getValue(this.def);
         } catch (final ClassCastException e) {
-            LOGGER.error("Improper value type for \"{}\"!", e);
+            LOGGER.error("Improper value type for \"{}\"!", this.key, e);
             return this.def;
         }
     }

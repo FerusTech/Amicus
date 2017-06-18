@@ -23,38 +23,40 @@
  * THE SOFTWARE.
  */
 
-package tech.ferus.amicus.core;
+package tech.ferus.amicus.core.util;
 
-import tech.ferus.amicus.core.storage.MySqlStorage;
-import tech.ferus.amicus.core.storage.SqliteStorage;
-import tech.ferus.amicus.core.storage.Storage;
-import tech.ferus.amicus.core.storage.StorageType;
-
-import ninja.leaping.configurate.ConfigurationNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public class ConfigProfile {
+public class FilesWrapper {
 
-    @Nonnull private final Storage storage;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesWrapper.class);
 
-    public ConfigProfile(@Nonnull final ConfigurationNode node,
-                         @Nonnull final StorageType type) {
-        if (type == StorageType.SQLITE) {
-            this.storage = new SqliteStorage(AmicusCore.getInstance().getConfigDir()
-                    .resolve(node.getNode("file-name").getString()));
-        } else {
-            this.storage = new MySqlStorage(
-                    node.getNode("host").getString(),
-                    node.getNode("port").getInt(),
-                    node.getNode("database").getString(),
-                    node.getNode("username").getString(),
-                    node.getNode("password").getString()
-            );
+    public static boolean createDirectories(@Nonnull final Path path) {
+        try {
+            Files.createDirectories(path);
+            return true;
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create directory (and parents?): {}", path.toString());
+            return false;
         }
     }
 
-    @Nonnull
-    public Storage getStorage() {
-        return this.storage;
+    public static boolean createFile(@Nonnull final Path path) {
+        if (!createDirectories(path.getParent())) {
+            return false;
+        }
+
+        try {
+            Files.createFile(path);
+            return true;
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create file: {}", path.toString());
+            return false;
+        }
     }
 }

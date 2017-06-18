@@ -238,3 +238,6 @@ gradle-app.setting
 # Custom Blocks
 /.idea/
 /run/
+
+# Transferring Script
+/transfer.bat
