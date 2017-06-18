@@ -47,7 +47,7 @@ project(":amicus-marriage") {
     version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/marriage/AmicusMarriage.java"
     ext."plugin.name" = "Amicus Marriage"
-    ext."plugin.description" = "Adds the ability for players to \"Tie the Knot\", as it were."
+    ext."plugin.description" = "Adds the ability for players to \\\\\"Tie the Knot\\\\\", as it were."
 }
 
 project(":amicus-magic") {
