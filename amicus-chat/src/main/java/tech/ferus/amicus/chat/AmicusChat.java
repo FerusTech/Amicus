@@ -66,19 +66,17 @@ public class AmicusChat {
     public static final String GIT_HASH_LONG = "@hashLong@";
     public static final String GIT_BRANCH = "@gitBranch@";
 
-    @Nonnull private final Path configDir;
     @Nonnull private final Game game;
     private final HoconConfigFile config;
 
     @Inject
-    public AmicusChat(@ConfigDir(sharedRoot = false) @Nonnull final Path configDir, @Nonnull final Game game) {
-        this.configDir = configDir;
+    public AmicusChat(@Nonnull final Game game) {
         this.game = game;
 
-        final Path configPath = configDir.resolve("amicus-chat.conf");
+        final Path configPath = AmicusCore.getInstance().getConfigDir().resolve("chat.conf");
         HoconConfigFile config = null;
         try {
-            config = HoconConfigFile.load(configPath, "/amicus-chat.conf");
+            config = HoconConfigFile.load(configPath, "/chat.conf");
         } catch (final IOException e) {
             LOGGER.error("Encountered exception while creating configuration file: {}", configPath.toString(), e);
         }
@@ -93,16 +91,11 @@ public class AmicusChat {
         );
 
         if (profile == null) {
-            LOGGER.error("AmicusChat profile failed to load!", new IllegalStateException());
+            LOGGER.error("Failed to load a profile!", new IllegalStateException());
             this.game.getEventManager().unregisterPluginListeners(this);
         } else {
             LOGGER.info("Successfully loaded profile \"{}\".", profile.getName());
         }
-    }
-
-    @Nonnull
-    public Path getConfigDir() {
-        return this.configDir;
     }
 
     @Nonnull
