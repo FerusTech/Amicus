@@ -30,35 +30,35 @@ gradle.taskGraph.whenReady { taskGraph ->
 }
 
 project(":amicus-core") {
-    version = "0.1.0"
+    version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/core/AmicusCore.java"
     ext."plugin.name" = "Amicus Core"
     ext."plugin.description" = "The Core utility of Amicus. Required for all extensions."
 }
 
 project(":amicus-skills") {
-    version = "0.1.0"
+    version = "1.0.0-SNAPSHOT
     ext."replace.location" = "src/main/java/tech/ferus/amicus/skills/AmicusSkills.java"
     ext."plugin.name" = "Amicus Skills"
     ext."plugin.description" = "Adds various, levelable skills to the Minecraft game."
 }
 
 project(":amicus-marriage") {
-    version = "0.1.0"
+    version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/marriage/AmicusMarriage.java"
     ext."plugin.name" = "Amicus Marriage"
     ext."plugin.description" = "Adds the ability for players to \\\\\"Tie the Knot\\\\\", as it were."
 }
 
 project(":amicus-magic") {
-    version = "0.1.0"
+    version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/magic/AmicusMagic.java"
     ext."plugin.name" = "Amicus Magic"
     ext."plugin.description" = "Taps into Amicus Skills to add skills of a more mystical nature."
 }
 
 project(":amicus-chat") {
-    version = "0.1.0"
+    version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/chat/AmicusChat.java"
     ext."plugin.name" = "Amicus Chat"
     ext."plugin.description" = "Modifies how users communicate, adding tabs, view distance, and more."
