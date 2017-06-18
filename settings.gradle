@@ -1,0 +1,5 @@
+include ":amicus-core"
+include ":amicus-skills"
+include ":amicus-marriage"
+include ":amicus-magic"
+include ":amicus-chat"
