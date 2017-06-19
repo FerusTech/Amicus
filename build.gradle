@@ -37,7 +37,7 @@ project(":amicus-core") {
 }
 
 project(":amicus-skills") {
-    version = "1.0.0-SNAPSHOT
+    version = "1.0.0-SNAPSHOT"
     ext."replace.location" = "src/main/java/tech/ferus/amicus/skills/AmicusSkills.java"
     ext."plugin.name" = "Amicus Skills"
     ext."plugin.description" = "Adds various, levelable skills to the Minecraft game."
