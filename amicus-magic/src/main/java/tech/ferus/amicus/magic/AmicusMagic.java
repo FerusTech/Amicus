@@ -25,22 +25,19 @@
 
 package tech.ferus.amicus.magic;
 
-
 import tech.ferus.amicus.core.AmicusCore;
-import tech.ferus.amicus.core.config.ConfigProfile;
-import tech.ferus.amicus.core.config.HoconConfigFile;
+import tech.ferus.amicus.core.AmicusPlugin;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
+
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.nio.file.Path;
+
+import java.util.Optional;
 
 import static tech.ferus.amicus.magic.AmicusMagic.DESCRIPTION;
 import static tech.ferus.amicus.magic.AmicusMagic.PLUGIN_ID;
@@ -51,7 +48,7 @@ import static tech.ferus.amicus.magic.AmicusMagic.VERSION;
 @Plugin(id = PLUGIN_ID, name = PLUGIN_NAME, version = VERSION,
         description = DESCRIPTION, url = URL, authors = {"FerusGrim"},
         dependencies = @Dependency(id = AmicusCore.PLUGIN_ID))
-public class AmicusMagic {
+public class AmicusMagic extends AmicusPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmicusMagic.class);
 
@@ -64,45 +61,19 @@ public class AmicusMagic {
     public static final String GIT_HASH_LONG = "@hashLong@";
     public static final String GIT_BRANCH = "@gitBranch@";
 
-    @Nonnull private final Game game;
-    private final HoconConfigFile config;
-
     @Inject
     public AmicusMagic(@Nonnull final Game game) {
-        this.game = game;
-
-        final Path configPath = AmicusCore.getInstance().getConfigDir().resolve("magic.conf");
-        HoconConfigFile config = null;
-        try {
-            config = HoconConfigFile.load(configPath, "/magic.conf");
-        } catch (final IOException e) {
-            LOGGER.error("Encountered exception while creating configuration file: {}", configPath.toString(), e);
-        }
-
-        this.config = config;
+        super(game, "magic.conf");
     }
 
-    @Listener
-    public void onGamePreInitialization(@Nonnull final GamePreInitializationEvent event) {
-        final ConfigProfile profile = AmicusCore.getInstance().getConfigProfile(
-                ConfigProfile.PROFILE.get(this.config)
-        );
-
-        if (profile == null) {
-            LOGGER.error("Failed to load a profile!", new IllegalStateException());
-            this.game.getEventManager().unregisterPluginListeners(this);
+    @Override
+    protected void displayProfileStatus() {
+        if (this.getProfile().isPresent()) {
+            LOGGER.info("Successfully loaded profile \"{}\"!", this.getProfile().get().getName());
         } else {
-            LOGGER.info("Successfully loaded profile \"{}\".", profile.getName());
+            LOGGER.error("Failed to load a profile from \"{}\"!",
+                    this.getConfig().getFile().getFileName().toString(),
+                    new IllegalStateException());
         }
-    }
-
-    @Nonnull
-    public Game getGame() {
-        return this.game;
-    }
-
-    @Nonnull
-    public HoconConfigFile getConfig() {
-        return this.config;
     }
 }

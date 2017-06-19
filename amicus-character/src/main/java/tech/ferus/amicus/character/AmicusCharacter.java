@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package tech.ferus.amicus.chat;
+package tech.ferus.amicus.character;
 
 import tech.ferus.amicus.core.AmicusCore;
 import tech.ferus.amicus.core.AmicusPlugin;
@@ -37,18 +37,18 @@ import org.spongepowered.api.plugin.Plugin;
 
 import javax.annotation.Nonnull;
 
-import static tech.ferus.amicus.chat.AmicusChat.DESCRIPTION;
-import static tech.ferus.amicus.chat.AmicusChat.PLUGIN_ID;
-import static tech.ferus.amicus.chat.AmicusChat.PLUGIN_NAME;
-import static tech.ferus.amicus.chat.AmicusChat.URL;
-import static tech.ferus.amicus.chat.AmicusChat.VERSION;
+import static tech.ferus.amicus.character.AmicusCharacter.DESCRIPTION;
+import static tech.ferus.amicus.character.AmicusCharacter.PLUGIN_ID;
+import static tech.ferus.amicus.character.AmicusCharacter.PLUGIN_NAME;
+import static tech.ferus.amicus.character.AmicusCharacter.URL;
+import static tech.ferus.amicus.character.AmicusCharacter.VERSION;
 
 @Plugin(id = PLUGIN_ID, name = PLUGIN_NAME, version = VERSION,
         description = DESCRIPTION, url = URL, authors = {"FerusGrim"},
         dependencies = @Dependency(id = AmicusCore.PLUGIN_ID))
-public class AmicusChat extends AmicusPlugin {
+public class AmicusCharacter extends AmicusPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AmicusChat.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmicusCharacter.class);
 
     public static final String PLUGIN_ID = "@pluginId@";
     public static final String PLUGIN_NAME = "@pluginName@";
@@ -60,8 +60,8 @@ public class AmicusChat extends AmicusPlugin {
     public static final String GIT_BRANCH = "@gitBranch@";
 
     @Inject
-    public AmicusChat(@Nonnull final Game game) {
-        super(game, "chat.conf");
+    public AmicusCharacter(@Nonnull final Game game) {
+        super(game, "character.conf");
     }
 
     @Override

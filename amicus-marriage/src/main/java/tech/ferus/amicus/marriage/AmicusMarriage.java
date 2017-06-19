@@ -26,20 +26,16 @@
 package tech.ferus.amicus.marriage;
 
 import tech.ferus.amicus.core.AmicusCore;
-import tech.ferus.amicus.core.config.ConfigProfile;
-import tech.ferus.amicus.core.config.HoconConfigFile;
+import tech.ferus.amicus.core.AmicusPlugin;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.api.Game;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
+
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.nio.file.Path;
 
 import static tech.ferus.amicus.marriage.AmicusMarriage.DESCRIPTION;
 import static tech.ferus.amicus.marriage.AmicusMarriage.PLUGIN_ID;
@@ -50,7 +46,7 @@ import static tech.ferus.amicus.marriage.AmicusMarriage.VERSION;
 @Plugin(id = PLUGIN_ID, name = PLUGIN_NAME, version = VERSION,
         description = DESCRIPTION, url = URL, authors = {"FerusGrim"},
         dependencies = @Dependency(id = AmicusCore.PLUGIN_ID))
-public class AmicusMarriage {
+public class AmicusMarriage extends AmicusPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AmicusMarriage.class);
 
@@ -63,45 +59,19 @@ public class AmicusMarriage {
     public static final String GIT_HASH_LONG = "@hashLong@";
     public static final String GIT_BRANCH = "@gitBranch@";
 
-    @Nonnull private final Game game;
-    private final HoconConfigFile config;
-
     @Inject
     public AmicusMarriage(@Nonnull final Game game) {
-        this.game = game;
-
-        final Path configPath = AmicusCore.getInstance().getConfigDir().resolve("marriage.conf");
-        HoconConfigFile config = null;
-        try {
-            config = HoconConfigFile.load(configPath, "/marriage.conf");
-        } catch (final IOException e) {
-            LOGGER.error("Encountered exception while creating configuration file: {}", configPath.toString(), e);
-        }
-
-        this.config = config;
+        super(game, "marriage.conf");
     }
 
-    @Listener
-    public void onGamePreInitialization(@Nonnull final GamePreInitializationEvent event) {
-        final ConfigProfile profile = AmicusCore.getInstance().getConfigProfile(
-                ConfigProfile.PROFILE.get(this.config)
-        );
-
-        if (profile == null) {
-            LOGGER.error("Failed to load a profile!", new IllegalStateException());
-            this.game.getEventManager().unregisterPluginListeners(this);
+    @Override
+    protected void displayProfileStatus() {
+        if (this.getProfile().isPresent()) {
+            LOGGER.info("Successfully loaded profile \"{}\"!", this.getProfile().get().getName());
         } else {
-            LOGGER.info("Successfully loaded profile \"{}\".", profile.getName());
+            LOGGER.error("Failed to load a profile from \"{}\"!",
+                    this.getConfig().getFile().getFileName().toString(),
+                    new IllegalStateException());
         }
-    }
-
-    @Nonnull
-    public Game getGame() {
-        return this.game;
-    }
-
-    @Nonnull
-    public HoconConfigFile getConfig() {
-        return this.config;
     }
 }
