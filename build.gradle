@@ -64,6 +64,13 @@ project(":amicus-chat") {
     ext."plugin.description" = "Modifies how users communicate, adding tabs, view distance, and more."
 }
 
+project(":amicus-character") {
+    version = "1.0.0-SNAPSHOT"
+    ext."replace.location" = "src/main/java/tech/ferus/amicus/character/AmicusCharacter.java"
+    ext."plugin.name" = "Amicus Character"
+    ext."plugin.description" = "Allows a player to define their race, age, gender, etc."
+}
+
 subprojects {
     apply plugin: "java"
     apply plugin: "idea"
