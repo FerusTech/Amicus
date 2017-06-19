@@ -241,3 +241,7 @@ gradle-app.setting
 
 # Transferring Script
 /transfer.bat
+
+# Not sure what, but something in this list is triggering AmicusMarriage.
+# Either that, or IntelliJ is going insane. Could go either way.
+!/amicus-marriage/src/main/java/tech/ferus/amicus/marriage/AmicusMarriage.java
